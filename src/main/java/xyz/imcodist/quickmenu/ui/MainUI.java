@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import xyz.imcodist.quickmenu.QuickMenu;
 import xyz.imcodist.quickmenu.data.ActionButtonData;
+import xyz.imcodist.quickmenu.data.command_actions.JumpFuncManage;
 import xyz.imcodist.quickmenu.other.ActionButtonDataHandler;
 import xyz.imcodist.quickmenu.other.ModKeybindings;
 import xyz.imcodist.quickmenu.ui.components.QuickMenuButton;
@@ -27,6 +28,11 @@ public class MainUI extends BaseOwoScreen<FlowLayout> {
 
     private FlowLayout editorLayout;
     private ActionButtonData hoveredData;
+    private JumpFuncManage funcManage;
+
+    public MainUI(JumpFuncManage funcManage){
+        this.funcManage = funcManage;
+    }
 
     @Override
     protected @NotNull OwoUIAdapter<FlowLayout> createAdapter() {
@@ -229,14 +235,14 @@ public class MainUI extends BaseOwoScreen<FlowLayout> {
         }
 
         // Run the buttons actions.
-        data.run();
+        data.run(this.funcManage);
 
         if (QuickMenu.CONFIG.closeOnAction()) close();
     }
 
     public MainUI cloneMenu() {
         // Create an instance of this menu with the same edit mode.
-        MainUI clone = new MainUI();
+        MainUI clone = new MainUI(this.funcManage);
         clone.editMode = editMode;
 
         return clone;

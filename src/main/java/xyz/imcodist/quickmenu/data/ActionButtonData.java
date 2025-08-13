@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import xyz.imcodist.quickmenu.QuickMenu;
 import xyz.imcodist.quickmenu.data.command_actions.BaseActionData;
 import xyz.imcodist.quickmenu.data.command_actions.CommandActionData;
+import xyz.imcodist.quickmenu.data.command_actions.JumpFuncManage;
 import xyz.imcodist.quickmenu.data.command_actions.KeybindActionData;
 import xyz.imcodist.quickmenu.other.ModConfigModel;
 
@@ -97,11 +98,11 @@ public class ActionButtonData {
         return InputUtil.fromKeyCode(keybind.get(0), keybind.get(1));
     }
 
-    public void run() {
-        run(false);
+    public void run(JumpFuncManage funcManage) {
+        run(false, funcManage);
     }
 
-    public void run(boolean isKeybind) {
+    public void run(boolean isKeybind, JumpFuncManage funcManage) {
         // Show run message.
         ModConfigModel.DisplayRunText displayRunText = QuickMenu.CONFIG.displayRunText();
         if (displayRunText == ModConfigModel.DisplayRunText.ALWAYS || displayRunText == ModConfigModel.DisplayRunText.KEYBIND_ONLY && isKeybind) {
@@ -114,6 +115,10 @@ public class ActionButtonData {
 
         // Run the buttons action.
         actions.forEach(BaseActionData::run);
+        if (funcManage != null){
+            funcManage.setListAction(actions);
+            // System.out.println(funcManage.listAction);
+        }
     }
 }
 

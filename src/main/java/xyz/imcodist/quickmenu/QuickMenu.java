@@ -3,16 +3,21 @@ package xyz.imcodist.quickmenu;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.util.InputUtil;
+
+import xyz.imcodist.quickmenu.data.command_actions.JumpFuncManage;
 import xyz.imcodist.quickmenu.other.ActionButtonDataHandler;
 import xyz.imcodist.quickmenu.other.KeybindHandler;
 import xyz.imcodist.quickmenu.other.ModConfig;
 import xyz.imcodist.quickmenu.other.ModKeybindings;
+import xyz.imcodist.quickmenu.other.ClientCommands;
 import xyz.imcodist.quickmenu.ui.MainUI;
 
 public class QuickMenu implements ModInitializer {
     public static final ModConfig CONFIG = ModConfig.createAndLoad();
 
     private static boolean menuKeyPressed = false;
+
+    public static JumpFuncManage funcManage = new JumpFuncManage();
 
     @Override
     public void onInitialize() {
@@ -25,13 +30,12 @@ public class QuickMenu implements ModInitializer {
             // Check for menu open keybind.
             if (ModKeybindings.menuOpenKeybinding.isPressed()) {
                 if (!menuKeyPressed) {
-                    client.setScreen(new MainUI());
+                    client.setScreen(new MainUI(funcManage));
                 }
                 menuKeyPressed = true;
             } else if (client.currentScreen == null) {
                 menuKeyPressed = false;
             }
-
             // Check for action buttons keybinds.
             // I really dont like this.
             if (client.currentScreen == null) {
@@ -56,22 +60,18 @@ public class QuickMenu implements ModInitializer {
                         // TODO: Allow buttons greater then 2 to be bound.
                         int mouseButton = actionButtonData.keybind.get(0);
                         boolean pressed = false;
-
                         switch (mouseButton) {
                             case 0 -> pressed = client.mouse.wasLeftButtonClicked();
                             case 1 -> pressed = client.mouse.wasRightButtonClicked();
                             case 2 -> pressed = client.mouse.wasMiddleButtonClicked();
                         }
-
                         if (pressed) run = true;
                     }
-
                     if (run) {
-                        actionButtonData.run(true);
+                        actionButtonData.run(true, funcManage);
                     }
                 });
             }
-
             KeybindHandler.runQueue();
         });
     }

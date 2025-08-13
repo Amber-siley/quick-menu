@@ -32,6 +32,7 @@ import xyz.imcodist.quickmenu.ui.popups.KeybindPickerUI;
 import xyz.imcodist.quickmenu.ui.surfaces.SwitcherSurface;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
@@ -79,7 +80,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
         // Set up the main layout.
         int mainLayoutHeight = 206;
-        FlowLayout mainLayout = Containers.verticalFlow(Sizing.fixed(210), Sizing.fixed(mainLayoutHeight));
+        FlowLayout mainLayout = Containers.verticalFlow(Sizing.fixed(330), Sizing.fixed(mainLayoutHeight));
         mainLayout.surface(new SwitcherSurface());
         mainLayout.zIndex(-200);
         rootComponent.child(mainLayout);
@@ -281,6 +282,27 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
             FlowLayout property = createNewProperty(name + " #" + (i.get() + 1), false, false);
             Component source = null;
+            
+            // 创建上下箭头按钮
+            ButtonComponent upButton = Components.button(Text.literal("↑"), button -> {
+                int loadCurrentIndex = actionArray.indexOf(action);
+                if (loadCurrentIndex > 0) {
+                    Collections.swap(actionArray, loadCurrentIndex, loadCurrentIndex - 1);
+                    Collections.swap(actionsSource, loadCurrentIndex, loadCurrentIndex - 1);
+                    createActions((FlowLayout) actionsLayout.parent());
+                }
+            });
+            upButton.margins(Insets.right(2));
+
+            ButtonComponent downButton = Components.button(Text.literal("↓"), button -> {
+                int loadCurrentIndex = actionArray.indexOf(action);
+                if (loadCurrentIndex < actionArray.size() - 1) {
+                    Collections.swap(actionArray, loadCurrentIndex, loadCurrentIndex + 1);
+                    Collections.swap(actionsSource, loadCurrentIndex, loadCurrentIndex + 1);
+                    createActions((FlowLayout) actionsLayout.parent());
+                }
+            });
+            downButton.margins(Insets.right(2));
 
             // If the action is a command add an input text box.
             if (action instanceof CommandActionData commandAction) {
@@ -288,8 +310,14 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
                 textBoxComponent.setMaxLength(10000);
                 textBoxComponent.text(commandAction.command);
-
-                property.child(textBoxComponent);
+                
+                // 将上下按钮和文本框放入水平容器
+                FlowLayout controlGroup = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+                controlGroup.child(upButton);
+                controlGroup.child(downButton);
+                controlGroup.child(textBoxComponent);
+                
+                property.child(controlGroup);
                 source = textBoxComponent;
             }
 
@@ -310,7 +338,12 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
                 keybindActionButton.horizontalSizing(Sizing.fill(57));
 
                 updateActionKeybindMessage(keybindActionButton, keybindAction);
-                property.child(keybindActionButton);
+                // 将上下按钮和键按钮放入水平容器
+                FlowLayout controlGroup = Containers.horizontalFlow(Sizing.content(), Sizing.content());
+                controlGroup.child(upButton);
+                controlGroup.child(downButton);
+                controlGroup.child(keybindActionButton);
+                property.child(controlGroup);
             }
 
             // Add the remove button.
@@ -324,6 +357,28 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
             }));
             removeActionButton.margins(Insets.of(0, 0, 4, 0));
             property.child(removeActionButton);
+
+            // 添加插入按钮
+            ButtonComponent insertBtn = Components.button(Text.literal(" + "), btn -> {
+                ActionPickerUI picker = new ActionPickerUI();
+                int currentIndex = actionArray.indexOf(action);
+                picker.onSelectedAction = newAction -> {
+                    Component textBox = null;
+                    if (newAction instanceof CommandActionData commandAction) {
+                        TextBoxComponent textBoxComponent = Components.textBox(Sizing.fill(57));
+                        textBoxComponent.setMaxLength(10000);
+                        textBoxComponent.text(commandAction.command);
+                        textBox = textBoxComponent;
+                    }
+                    actionsSource.add(currentIndex + 1, textBox);
+                    actionArray.add(currentIndex + 1, newAction);
+                    createActions((FlowLayout) actionsLayout.parent());
+                };
+                ((FlowLayout) layout.root()).child(picker);
+                pickerUI = picker;
+            });
+            insertBtn.margins(Insets.of(0, 0, 4, 0));
+            property.child(insertBtn);
 
             actionsLayout.child(property);
 

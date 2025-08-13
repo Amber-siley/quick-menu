@@ -1,0 +1,58 @@
+package xyz.imcodist.quickmenu.data.command_actions;
+
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+
+import java.util.List;
+import java.util.ArrayList;
+
+
+public class JumpFuncManage {
+    public List<BaseActionData> listAction = new ArrayList<>();
+    public List<BaseActionData> baseListAction = new ArrayList<>();
+
+    public JumpFuncManage() {
+        ClientTickEvents.END_CLIENT_TICK.register(this::onServerTick);
+    }
+
+    public void setListAction(List<BaseActionData> tmplist) {
+        List<BaseActionData> tmp1 = new ArrayList<>();
+        List<BaseActionData> tmp2 = new ArrayList<>();
+        for (BaseActionData base : tmplist) {
+            tmp1.add(base.clone());
+            tmp2.add(base.clone());
+        }
+        this.listAction = tmp1;
+        this.baseListAction = tmp2;
+    }
+
+    public void gotoIndex(int index) {
+        if (this.listAction.isEmpty()) {
+
+        } else if (index > this.baseListAction.size()) {
+            this.setListAction(new ArrayList<>());
+        } else if (index > 0){
+            this.listAction.clear();
+            for (BaseActionData base : this.baseListAction.subList(index - 1, this.baseListAction.size())) {
+                this.listAction.add(base.clone());
+            }
+        }
+    }
+
+    public void onServerTick(MinecraftClient client) {
+        if (this.listAction.size() == 0) return;
+
+        // MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null) return;
+
+        ClientPlayerEntity player = client.player;
+        if (player == null) return;
+        BaseActionData a = this.listAction.get(0);
+        a.delaySub();
+        if (a.delay <= 0) {
+            a.funcstart();
+            this.listAction.remove(a);
+        }
+    }
+}
