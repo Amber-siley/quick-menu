@@ -48,11 +48,15 @@ public class JumpFuncManage {
 
         ClientPlayerEntity player = client.player;
         if (player == null) return;
-        BaseActionData a = this.listAction.get(0);
-        a.delaySub();
-        if (a.delay <= 0) {
-            a.funcstart();
-            this.listAction.remove(a);
+        while (this.listAction.size() > 0) {
+            BaseActionData a = this.listAction.get(0);
+            a.delaySub();
+            if (a.delay <= 0) {
+                a.funcstart();
+                this.listAction.remove(a);
+            } else {
+                break;
+            }
         }
     }
 }
