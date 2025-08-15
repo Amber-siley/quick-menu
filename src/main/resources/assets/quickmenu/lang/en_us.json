@@ -41,5 +41,10 @@
 
   "text.config.quickmenu.option.displayRunText.value.always": "Always",
   "text.config.quickmenu.option.displayRunText.value.keybind_only": "Keybind Only",
-  "text.config.quickmenu.option.displayRunText.value.never": "Never"
+  "text.config.quickmenu.option.displayRunText.value.never": "Never",
+
+  "menu.delete.confirm": "confirm",
+  "menu.delete.warning": "Are you sure delete?",
+  "menu.delete.cancel": "cancel",
+  "menu.delete.confirm_button": "confirm"
 }

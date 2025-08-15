@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.command.CommandSource;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,7 +18,6 @@ import xyz.imcodist.quickmenu.QuickMenu;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;

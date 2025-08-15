@@ -22,6 +22,7 @@ import xyz.imcodist.quickmenu.other.ActionButtonDataHandler;
 import xyz.imcodist.quickmenu.other.ModKeybindings;
 import xyz.imcodist.quickmenu.ui.components.QuickMenuButton;
 import xyz.imcodist.quickmenu.ui.surfaces.SwitcherSurface;
+import xyz.imcodist.quickmenu.ui.popups.AskDelUI;
 
 public class MainUI extends BaseOwoScreen<FlowLayout> {
     public boolean editMode = false;
@@ -169,7 +170,7 @@ public class MainUI extends BaseOwoScreen<FlowLayout> {
 
                     // Create the action button.
                     ActionButtonData data = ActionButtonDataHandler.actions.get(curAction);
-                    QuickMenuButton button = createActionButton(data);
+                    QuickMenuButton button = createActionButton(data, parent);
                     buttonRowLayout.child(button);
 
                     curAction++;
@@ -190,7 +191,7 @@ public class MainUI extends BaseOwoScreen<FlowLayout> {
         }
     }
 
-    private QuickMenuButton createActionButton(ActionButtonData data) {
+    private QuickMenuButton createActionButton(ActionButtonData data, FlowLayout parent) {
         // Create the button.
         QuickMenuButton button = new QuickMenuButton(data.icon, (buttonComponent) -> {
             // On left click.
@@ -198,8 +199,19 @@ public class MainUI extends BaseOwoScreen<FlowLayout> {
         }, (quickMenuButton) -> {
             // On right click.
             if (editMode) {
-                ActionButtonDataHandler.remove(data);
-                MinecraftClient.getInstance().setScreen(cloneMenu());
+                // Show confirmation dialog instead of directly deleting
+                AskDelUI askDelUI = new AskDelUI(data);
+                askDelUI.onConfirmDelete = (actionData) -> {
+                    ActionButtonDataHandler.remove(actionData);
+                    MinecraftClient.getInstance().setScreen(cloneMenu());
+                };
+                // Add the confirmation dialog to the current screen
+                askDelUI.onCancelDelete = () -> {
+                    MinecraftClient.getInstance().setScreen(cloneMenu());
+                    return 1;
+                };
+                parent.clearChildren();
+                ((FlowLayout) parent.root()).child(askDelUI);
             }
         });
 

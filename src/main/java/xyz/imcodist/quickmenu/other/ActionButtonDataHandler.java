@@ -1,6 +1,7 @@
 package xyz.imcodist.quickmenu.other;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import net.fabricmc.loader.api.FabricLoader;
 import xyz.imcodist.quickmenu.data.ActionButtonData;
@@ -54,7 +55,8 @@ public class ActionButtonDataHandler {
             actionDataJSONS.add(action.toJSON());
         }
 
-        Gson gson = new Gson();
+        // Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonString = gson.toJson(actionDataJSONS);
 
         // Save the json.

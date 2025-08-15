@@ -50,11 +50,11 @@ public class JumpFuncManage {
         if (player == null) return;
         while (this.listAction.size() > 0) {
             BaseActionData a = this.listAction.get(0);
-            a.delaySub();
             if (a.delay <= 0) {
                 a.funcstart();
                 this.listAction.remove(a);
             } else {
+                a.delaySub();
                 break;
             }
         }
