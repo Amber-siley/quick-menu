@@ -41,6 +41,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
     FlowLayout actionsLayout;
     ArrayList<Component> actionsSource = new ArrayList<>();
+    ArrayList<Component> actionTicksSource = new ArrayList<>();
     ArrayList<BaseActionData> actionArray = new ArrayList<>();
 
     private OverlayContainer<FlowLayout> pickerUI;
@@ -189,6 +190,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
         ButtonComponent finishButton = Components.button(Text.translatable("menu.editor.button.finish"), (buttonComponent) -> {
             // Save the action button and close.
+            // 点击保存后更新
             actionButtonData.name = nameTextBox.getText();
             if (iconButton.itemIcon != null) actionButtonData.icon = iconButton.itemIcon;
 
@@ -270,6 +272,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
         // Clear the original layout of all previous buttons.
         actionsSource.clear();
+        actionTicksSource.clear();
         if (actionsLayout != null) actionsLayout.remove();
 
         actionsLayout = createActionsLayout();
@@ -282,6 +285,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
             FlowLayout property = createNewProperty(name + " #" + (i.get() + 1), false, false);
             Component source = null;
+            Component tickSource = null;
             
             // 创建上下箭头按钮
             ButtonComponent upButton = Components.button(Text.literal("↑"), button -> {
@@ -289,6 +293,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
                 if (loadCurrentIndex > 0) {
                     Collections.swap(actionArray, loadCurrentIndex, loadCurrentIndex - 1);
                     Collections.swap(actionsSource, loadCurrentIndex, loadCurrentIndex - 1);
+                    Collections.swap(actionTicksSource, loadCurrentIndex, loadCurrentIndex - 1);
                     createActions((FlowLayout) actionsLayout.parent());
                 }
             });
@@ -299,6 +304,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
                 if (loadCurrentIndex < actionArray.size() - 1) {
                     Collections.swap(actionArray, loadCurrentIndex, loadCurrentIndex + 1);
                     Collections.swap(actionsSource, loadCurrentIndex, loadCurrentIndex + 1);
+                    Collections.swap(actionTicksSource, loadCurrentIndex, loadCurrentIndex + 1);
                     createActions((FlowLayout) actionsLayout.parent());
                 }
             });
@@ -306,19 +312,71 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
             // If the action is a command add an input text box.
             if (action instanceof CommandActionData commandAction) {
-                TextBoxComponent textBoxComponent = Components.textBox(Sizing.fill(57));
+                FlowLayout inputGroup = Containers.horizontalFlow(Sizing.fill(57), Sizing.content());
+                TextBoxComponent textBoxComponent = Components.textBox(Sizing.fill(79));
+                TextBoxComponent tickBoxComponent = Components.textBox(Sizing.fill(20));
 
                 textBoxComponent.setMaxLength(10000);
                 textBoxComponent.text(commandAction.command);
+
+                tickBoxComponent.setMaxLength(10);
+                tickBoxComponent.text(String.valueOf(commandAction.delay));
+                tickBoxComponent.onChanged().subscribe(text -> {
+                    String num = text.replaceAll("\\D", "");
+                    String command = textBoxComponent.getText();
+                    // jump 参数强制不可修改
+                    if (command.startsWith("/jump ")) {
+                        num = command.substring(6).replaceAll("\\D", "");
+                        if (num.length() > 0) {
+                            try {
+                                tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)));
+                            } catch (Exception e) {
+                                tickBoxComponent.setText("0");
+                            }
+                        } else {
+                            tickBoxComponent.setText("0");
+                        }
+                        return;
+                    }
+                    if (num.length() > 0) {
+                        if (num.length() > 3) {
+                            tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)).substring(0, 3));
+                        } else {
+                            tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)));
+                        }
+                    } else {
+                        tickBoxComponent.setText("0");
+                    }
+                });
+                textBoxComponent.onChanged().subscribe(text -> {
+                    String num = null;
+                    if (text.startsWith("/jump ")) {
+                        num = text.substring(6).replaceAll("\\D", "");
+                        if (num.length() > 0) {
+                            try {
+                                tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)));
+                            } catch (Exception e) {
+                                tickBoxComponent.setText("0");
+                            }
+                        } else {
+                            tickBoxComponent.setText("0");
+                        }
+                        return;
+                    }
+                });
+
+                inputGroup.child(tickBoxComponent);
+                inputGroup.child(textBoxComponent);
                 
                 // 将上下按钮和文本框放入水平容器
                 FlowLayout controlGroup = Containers.horizontalFlow(Sizing.content(), Sizing.content());
                 controlGroup.child(upButton);
                 controlGroup.child(downButton);
-                controlGroup.child(textBoxComponent);
-                
+                controlGroup.child(inputGroup);
+        
                 property.child(controlGroup);
                 source = textBoxComponent;
+                tickSource = tickBoxComponent;
             }
 
             // If the action is a keybind.
@@ -335,21 +393,43 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
 
                     pickerUI = keybindPicker;
                 });
-                keybindActionButton.horizontalSizing(Sizing.fill(57));
+                FlowLayout inputGroup = Containers.horizontalFlow(Sizing.fill(57), Sizing.content());
+                TextBoxComponent tickBoxComponent = Components.textBox(Sizing.fill(20));
+                tickBoxComponent.setMaxLength(10);
+                tickBoxComponent.text(String.valueOf(keybindAction.delay));
+                tickBoxComponent.onChanged().subscribe(text -> {
+                    String num = text.replaceAll("\\D", "");
+                    if (num.length() > 0) {
+                        if (num.length() > 3) {
+                            tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)).substring(0, 3));
+                        } else {
+                            tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)));
+                        }
+                    } else {
+                        tickBoxComponent.setText("0");
+                    }
+                });
+                keybindActionButton.horizontalSizing(Sizing.fill(79));
+                inputGroup.child(tickBoxComponent);
+                inputGroup.child(keybindActionButton);
 
                 updateActionKeybindMessage(keybindActionButton, keybindAction);
                 // 将上下按钮和键按钮放入水平容器
                 FlowLayout controlGroup = Containers.horizontalFlow(Sizing.content(), Sizing.content());
                 controlGroup.child(upButton);
                 controlGroup.child(downButton);
-                controlGroup.child(keybindActionButton);
+                // controlGroup.child(keybindActionButton);
+                controlGroup.child(inputGroup);
                 property.child(controlGroup);
+                source = keybindActionButton;
+                tickSource = tickBoxComponent;
             }
 
             // Add the remove button.
             ButtonComponent removeActionButton = Components.button(Text.literal(" - "), (buttonComponent -> {
                 int currentIndex = actionArray.indexOf(action);
                 actionsSource.remove(currentIndex);
+                actionTicksSource.remove(currentIndex);
                 actionArray.remove(action);
 
                 assert actionsLayout.parent() != null;
@@ -364,13 +444,64 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
                 int currentIndex = actionArray.indexOf(action);
                 picker.onSelectedAction = newAction -> {
                     Component textBox = null;
+                    Component tickbox = null;
                     if (newAction instanceof CommandActionData commandAction) {
-                        TextBoxComponent textBoxComponent = Components.textBox(Sizing.fill(57));
+                        TextBoxComponent textBoxComponent = Components.textBox(Sizing.fill(79));
+                        TextBoxComponent tickBoxComponent = Components.textBox(Sizing.fill(20));
+
                         textBoxComponent.setMaxLength(10000);
                         textBoxComponent.text(commandAction.command);
+
+                        tickBoxComponent.setMaxLength(10);
+                        tickBoxComponent.text(String.valueOf(commandAction.delay));
+                        tickBoxComponent.onChanged().subscribe(text -> {
+                            String num = text.replaceAll("\\D", "");
+                            if (num.length() > 0) {
+                                if (num.length() > 3) {
+                                    tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)).substring(0, 3));
+                                } else {
+                                    tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)));
+                                }
+                            } else {
+                                tickBoxComponent.setText("0");
+                            }
+                        });
                         textBox = textBoxComponent;
+                        tickbox = tickBoxComponent;
+                    }
+                    if (newAction instanceof KeybindActionData keybindAction) {
+                        ButtonComponent keybindActionButton = Components.button(Text.translatable("menu.editor.not_bound"), (buttonComponent) -> {
+                            KeybindPickerUI keybindPicker = new KeybindPickerUI();
+                            keybindPicker.onSelectedKeybind = (item) -> {
+                                keybindAction.keybindTranslationKey = item.getTranslationKey();
+                                updateActionKeybindMessage(buttonComponent, keybindAction);
+                            };
+
+                            FlowLayout rootComponent = (FlowLayout) layout.root();
+                            rootComponent.child(keybindPicker);
+
+                            pickerUI = keybindPicker;
+                        });
+                        TextBoxComponent tickBoxComponent = Components.textBox(Sizing.fill(20));
+                        tickBoxComponent.setMaxLength(10);
+                        tickBoxComponent.text(String.valueOf(keybindAction.delay));
+                        tickBoxComponent.onChanged().subscribe(text -> {
+                            String num = text.replaceAll("\\D", "");
+                            if (num.length() > 0) {
+                                if (num.length() > 3) {
+                                    tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)).substring(0, 3));
+                                } else {
+                                    tickBoxComponent.setText(String.valueOf(Integer.valueOf(num)));
+                                }
+                            } else {
+                                tickBoxComponent.setText("0");
+                            }
+                        });
+                        textBox = keybindActionButton;
+                        tickbox = tickBoxComponent;
                     }
                     actionsSource.add(currentIndex + 1, textBox);
+                    actionTicksSource.add(currentIndex + 1, tickbox);
                     actionArray.add(currentIndex + 1, newAction);
                     createActions((FlowLayout) actionsLayout.parent());
                 };
@@ -383,6 +514,7 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
             actionsLayout.child(property);
 
             actionsSource.add(source);
+            actionTicksSource.add(tickSource);
             i.addAndGet(1);
         });
 
@@ -426,10 +558,17 @@ public class ActionEditorUI extends BaseOwoScreen<FlowLayout> {
         actionArray.forEach((action) -> {
             if (actionsSource.size() <= i.get()) return;
             Component source = actionsSource.get(i.get());
+            Component tickSource = actionTicksSource.get(i.get());
 
             if (action instanceof CommandActionData commandAction) {
                 TextBoxComponent textBoxSource = (TextBoxComponent) source;
+                TextBoxComponent tickBoxSource = (TextBoxComponent) tickSource;
                 commandAction.command = textBoxSource.getText();
+                commandAction.delay = Integer.valueOf(tickBoxSource.getText());
+            }
+            if (action instanceof KeybindActionData keybindAction) {
+                TextBoxComponent tickBoxSource = (TextBoxComponent) tickSource;
+                keybindAction.delay = Integer.valueOf(tickBoxSource.getText());
             }
 
             i.addAndGet(1);

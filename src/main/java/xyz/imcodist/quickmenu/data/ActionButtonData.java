@@ -37,6 +37,7 @@ public class ActionButtonData {
             ArrayList<String> actionArray = new ArrayList<>();
             actionArray.add(action.getJsonType());
             actionArray.add(action.getJsonValue());
+            actionArray.add(String.valueOf(action.delay));
 
             jsonData.actions.add(actionArray);
         });
@@ -61,7 +62,12 @@ public class ActionButtonData {
         data.keybind = json.keybind;
 
         json.actions.forEach((actionArray) -> {
-            BaseActionData actionData = getActionDataType(actionArray.get(0), actionArray.get(1));
+            BaseActionData actionData = null;
+            if (actionArray.size() == 3) {
+                actionData = getActionDataType(actionArray.get(0), actionArray.get(1), actionArray.get(2));
+            } else {
+                actionData = getActionDataType(actionArray.get(0), actionArray.get(1), "0");
+            }
             data.actions.add(actionData);
         });
 
@@ -73,7 +79,7 @@ public class ActionButtonData {
         return data;
     }
 
-    private static BaseActionData getActionDataType(String type, String value) {
+    private static BaseActionData getActionDataType(String type, String value, String delay) {
         switch (type) {
             case "base" -> {
                 return new BaseActionData();
@@ -81,11 +87,13 @@ public class ActionButtonData {
             case "cmd" -> {
                 CommandActionData commandActionData = new CommandActionData();
                 commandActionData.command = value;
+                commandActionData.delay = Integer.valueOf(delay);
                 return commandActionData;
             }
             case "key" -> {
                 KeybindActionData keybindActionData = new KeybindActionData();
                 keybindActionData.keybindTranslationKey = value;
+                keybindActionData.delay = Integer.valueOf(delay);
                 return keybindActionData;
             }
         }
@@ -113,11 +121,10 @@ public class ActionButtonData {
             }
         }
 
-        // Run the buttons action.
-        actions.forEach(BaseActionData::run);
+        // 准备运行action初始化
+        actions.forEach(BaseActionData::ready);
         if (funcManage != null){
             funcManage.setListAction(actions);
-            // System.out.println(funcManage.listAction);
         }
     }
 }

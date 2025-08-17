@@ -73,19 +73,19 @@ public class ClientCommands implements ClientModInitializer {
                                 return 1;
                             })
                             .then(literal("msg")
-                                .then(argument("Message", StringArgumentType.string())
+                                .then(argument("Message", ClientMessageArgumentType.message())
                                     .executes(context -> {
                                         if (isPlayerOnline(StringArgumentType.getString(context, "Name"), context.getSource())) {
                                             QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(context, "Actions Number"));
-                                            addMsg(StringArgumentType.getString(context, "Message"));
+                                            addMsg(ClientMessageArgumentType.getMessage(context, "Message"));
                                         }
                                         return 1;
                                     })))))
                     .then(literal("msg")
-                        .then(argument("Message", StringArgumentType.string())
+                        .then(argument("Message", ClientMessageArgumentType.message())
                             .executes(context -> {
                                 if (isPlayerOnline(StringArgumentType.getString(context, "Name"), context.getSource())) {
-                                    addMsg(StringArgumentType.getString(context, "Message"));
+                                    addMsg(ClientMessageArgumentType.getMessage(context, "Message"));
                                 }
                                 return 1;
                             }))))
@@ -97,11 +97,27 @@ public class ClientCommands implements ClientModInitializer {
                         if (player == null) return 1;
                         if (client.inGameHud != null && client.inGameHud.getChatHud() != null) {
                             ChatHud chatHud = client.inGameHud.getChatHud();
-                            chatHud.addMessage(Text.of("╔ [Players List]"));
+                            this.addMsg("╔ [Players List]");
                             for (String name : getPlayers(context.getSource())) {
                                 chatHud.addMessage(Text.of("╟ " + name));
                             }
                         }
+                        return 1;
+                    }))
+        );
+        dispatcher.register(
+            literal("isay")
+                .then(argument("Message", ClientMessageArgumentType.message())
+                    .executes(context -> {
+                        this.iSay(ClientMessageArgumentType.getMessage(context, "Message"));
+                        return 1;
+                    }))
+        );
+        dispatcher.register(
+            literal("osay")
+                .then(argument("Message", ClientMessageArgumentType.message())
+                    .executes(context -> {
+                        addMsg(ClientMessageArgumentType.getMessage(context, "Message"));
                         return 1;
                     }))
         );
@@ -114,16 +130,32 @@ public class ClientCommands implements ClientModInitializer {
             chatHud.clear(true);
         }
     }
+    
+    private void iSay(String msg) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null) return;
+        ClientPlayerEntity player = client.player;
+        if (player == null) return;
+        player.networkHandler.sendChatMessage(msg);
+    }
 
-    private void addMsg(String msg) {
+    private void iSay(Text msg) {
+        this.iSay(msg.getString());
+    }
+
+    private void addMsg(Text msg) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
         ClientPlayerEntity player = client.player;
         if (player == null) return;
         if (client.inGameHud != null && client.inGameHud.getChatHud() != null) {
             ChatHud chatHud = client.inGameHud.getChatHud();
-            chatHud.addMessage(Text.of(msg));
+            chatHud.addMessage(msg);
         }
+    }
+
+    private void addMsg(String msg) {
+        this.addMsg(Text.of(msg));
     }
 
     public static boolean isPlayerOnline(String playerName, CommandSource source) {

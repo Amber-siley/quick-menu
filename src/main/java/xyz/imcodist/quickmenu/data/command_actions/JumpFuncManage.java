@@ -51,7 +51,7 @@ public class JumpFuncManage {
         while (this.listAction.size() > 0) {
             BaseActionData a = this.listAction.get(0);
             if (a.delay <= 0) {
-                a.funcstart();
+                a.run();
                 this.listAction.remove(a);
             } else {
                 a.delaySub();

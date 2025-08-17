@@ -43,7 +43,6 @@
   "text.config.quickmenu.option.displayRunText.value.keybind_only": "仅键盘",
   "text.config.quickmenu.option.displayRunText.value.never": "从不",
 
-  "menu.delete.confirm": "确定",
   "menu.delete.warning": "确定删除吗",
   "menu.delete.cancel": "取消",
   "menu.delete.confirm_button": "确定"

@@ -16,8 +16,10 @@ public class BaseActionData implements Cloneable {
     public void run() {}
 
     public int delay = 0;
-    public void delaySub() {}
-    public void funcstart() {}
+    public void delaySub() {
+        this.delay--;
+    }
+    public void ready() {}
     @Override
     public BaseActionData clone() {
         try {

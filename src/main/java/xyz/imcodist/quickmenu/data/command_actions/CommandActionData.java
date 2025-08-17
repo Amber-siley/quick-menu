@@ -23,16 +23,8 @@ public class CommandActionData extends BaseActionData {
         return command;
     }
 
-    public void delaySub() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null) return;
-        ClientPlayerEntity player = client.player;
-        if (player == null) return;
-        this.delay--;
-    }
-
     @Override
-    public void funcstart() {
+    public void run() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;
 
@@ -46,7 +38,7 @@ public class CommandActionData extends BaseActionData {
     }
 
     @Override
-    public void run() {
+    public void ready() {
         // 不执行
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null) return;

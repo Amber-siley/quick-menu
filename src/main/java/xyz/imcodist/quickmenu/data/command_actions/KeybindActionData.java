@@ -23,7 +23,7 @@ public class KeybindActionData extends BaseActionData {
     }
 
     @Override
-    public void funcstart() {
+    public void run() {
         KeybindHandler.pressKey(keybindTranslationKey);
     }
 }
