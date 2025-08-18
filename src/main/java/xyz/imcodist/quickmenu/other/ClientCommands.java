@@ -121,6 +121,77 @@ public class ClientCommands implements ClientModInitializer {
                         return 1;
                     }))
         );
+        dispatcher.register(
+            literal("var")
+                .then(literal("Str")
+                    .then(argument("Variable Name", StringArgumentType.string())
+                        .executes(context -> {
+                            QuickMenu.funcManage.addVariable(StringArgumentType.getString(context, "Variable Name"), "");
+                            return 1;
+                        })
+                        .then(argument("Value", StringArgumentType.string())
+                            .executes(context -> {
+                                QuickMenu.funcManage.addVariable(StringArgumentType.getString(context, "Variable Name"), StringArgumentType.getString(context, "Value"));
+                                return 1;
+                            }))))
+                .then(literal("List")
+                    .executes(context -> {
+                        ArrayList<String> keys = QuickMenu.funcManage.getKeys();
+                        ArrayList<Object> values = QuickMenu.funcManage.getValues();
+                        addMsg("Variable List:");
+                        for (int i = 0; i < keys.size(); i++) {
+                            Object value = values.get(i);
+                            if (value instanceof String) {
+                                value = "\"" + value + "\"";
+                            }
+                            addMsg(" - "+keys.get(i) + ": " + value);
+                        }
+                        return 1;
+                    }))
+                .then(literal("Clear")
+                    .executes(context -> {
+                        QuickMenu.funcManage.map.clear();
+                        return 1;
+                    }))
+                .then(literal("Int")
+                    .then(argument("Variable Name", StringArgumentType.string())
+                        .executes(context -> {
+                            QuickMenu.funcManage.addVariable(StringArgumentType.getString(context, "Variable Name"), 0);
+                            return 1;
+                        })
+                        .then(argument("Value", IntegerArgumentType.integer())
+                            .executes(context -> {
+                                QuickMenu.funcManage.addVariable(StringArgumentType.getString(context, "Variable Name"), IntegerArgumentType.getInteger(context, "Value"));
+                                return 1;
+                            }))))
+                .then(argument("Variable Name", StringArgumentType.string())
+                    .suggests((c, b) -> {
+                        String input = b.getRemaining().toLowerCase();
+                        for (String name : QuickMenu.funcManage.getKeys()) {
+                            if (name.toLowerCase().startsWith(input)) {
+                                b.suggest(name);
+                            }
+                        }
+                        return b.buildFuture();
+                    })
+                    .then(argument("Expression", StringArgumentType.greedyString())
+                        .executes(c -> {
+                            String expr = StringArgumentType.getString(c, "Expression");
+                            for (String i : QuickMenu.funcManage.getKeys()) {
+                                String key = "\\{"+i+"\\}";
+                                if (expr.contains("{"+i+"}")) {
+                                    expr = expr.replaceAll(key, String.valueOf(QuickMenu.funcManage.getVariable(i)));
+                                }
+                            }
+                            if (QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable Name")) instanceof Integer) {
+                                int result = (int) CalcExpression.getParsedExpression(c.getSource().getEntity(), expr);
+                                QuickMenu.funcManage.setVariable(StringArgumentType.getString(c, "Variable Name"), result);
+                            } else {
+                                QuickMenu.funcManage.setVariable(StringArgumentType.getString(c, "Variable Name"), expr);
+                            }
+                            return 1;
+                        })))
+        );
     }
 
     private void clearChat() {
