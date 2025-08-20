@@ -12,35 +12,46 @@ import java.util.HashMap;
 public class JumpFuncManage {
     public List<BaseActionData> listAction = new ArrayList<>();
     public List<BaseActionData> baseListAction = new ArrayList<>();
-    public Map<String, Object> map = new HashMap<>();
+    public Map<String, Object> variableMap = new HashMap<>();
+    public record forLoop(Integer startIndex, Integer endIndex, Integer start, Integer end, Integer step) {}
+    public Map<String, forLoop> forLoopMap = new HashMap<>(); // 变量名对应具体循环值
+    public Integer currentIndex = 1;
 
     public JumpFuncManage() {
         ClientTickEvents.END_CLIENT_TICK.register(this::onServerTick);
     }
 
     public void addVariable(String name, Integer num) {
-        map.put(name, num);
+        variableMap.put(name, num);
     }
 
     public void addVariable(String name, String str) {
-        map.put(name, str);
+        variableMap.put(name, str);
     }
 
     public void setVariable(String name, Object obj) {
-        map.replace(name, obj);
+        variableMap.replace(name, obj);
     }
 
     public Object getVariable(String name) {
-        return map.getOrDefault(name, 0);
+        return variableMap.getOrDefault(name, 0);
     }
 
     public boolean containskey(String name) {
-        return map.containsKey(name);
+        return variableMap.containsKey(name);
     }
 
     public ArrayList<String> getKeys() {
         ArrayList<String> keys = new ArrayList<>();
-        for (String key : this.map.keySet()) {
+        for (String key : this.variableMap.keySet()) {
+            keys.add(key);
+        }
+        return keys;
+    }
+
+    public ArrayList<String> getForLoopKeys() {
+        ArrayList<String> keys = new ArrayList<>();
+        for (String key : this.forLoopMap.keySet()) {
             keys.add(key);
         }
         return keys;
@@ -48,7 +59,7 @@ public class JumpFuncManage {
 
     public ArrayList<Object> getValues() {
         ArrayList<Object> values = new ArrayList<>();
-        for (Object key : this.map.values().toArray()) {
+        for (Object key : this.variableMap.values().toArray()) {
             values.add(key);
         }
         return values;
@@ -63,6 +74,7 @@ public class JumpFuncManage {
         }
         this.listAction = tmp1;
         this.baseListAction = tmp2;
+        this.currentIndex = 1;
     }
 
     public void gotoIndex(int index) {
@@ -75,6 +87,29 @@ public class JumpFuncManage {
             for (BaseActionData base : this.baseListAction.subList(index - 1, this.baseListAction.size())) {
                 this.listAction.add(base.clone());
             }
+            this.currentIndex = index;
+            this.forLoopMap.clear();
+        }
+    }
+    
+    public void forLoopGotoIndex(int index) {
+        if (index > this.baseListAction.size()) {
+            this.setListAction(new ArrayList<>());
+        } else if (index > 0){
+            this.listAction.clear();
+            for (BaseActionData base : this.baseListAction.subList(index - 1, this.baseListAction.size())) {
+                this.listAction.add(base.clone());
+            }
+            this.currentIndex = index;
+        }
+    }
+
+    public void creatForLoop(String var, Integer end_index, Integer start, Integer end, Integer step) {
+        if (this.listAction.size() > 0) {
+            if (end_index >= this.baseListAction.size()) end_index = this.baseListAction.size();
+            forLoop loop = new forLoop(this.currentIndex+1, end_index, start, end, step);
+            this.forLoopMap.put(var, loop);
+            this.variableMap.put(var, start);
         }
     }
 
@@ -94,10 +129,33 @@ public class JumpFuncManage {
                         }
                     }
                 }
+                ArrayList<String> forLoopKeys = this.getForLoopKeys();
                 a.run();
                 this.listAction.remove(a);
+                if (forLoopKeys.size() > 0) {
+                    String key = forLoopKeys.get(forLoopKeys.size()-1);
+                    forLoop loop = this.forLoopMap.get(key);
+                    if (this.currentIndex == loop.endIndex & (Integer) this.getVariable(key) < loop.end-1) {
+                        // 处在循环中
+                        this.forLoopGotoIndex(loop.startIndex);
+                        this.setVariable(key, (Integer) this.getVariable(key) + loop.step);
+                        continue;
+                    }
+                    if ((Integer) this.getVariable(key) >= loop.end-1) {
+                        this.forLoopMap.remove(key);
+                        if (this.forLoopMap.size() > 0) {
+                            forLoopKeys = this.getForLoopKeys();
+                            key = forLoopKeys.get(forLoopKeys.size()-1);
+                            loop = this.forLoopMap.get(key);
+                            this.forLoopGotoIndex(loop.startIndex);
+                            this.setVariable(key, (Integer) this.getVariable(key) + loop.step);
+                            continue;
+                        }
+                    }
+                }
+                this.currentIndex += 1;
                 if (this.listAction.size() == 0) {
-                    this.map.clear();
+                    this.variableMap.clear();
                 }
             } else {
                 a.delaySub();

@@ -150,7 +150,7 @@ public class ClientCommands implements ClientModInitializer {
                     }))
                 .then(literal("Clear")
                     .executes(context -> {
-                        QuickMenu.funcManage.map.clear();
+                        QuickMenu.funcManage.variableMap.clear();
                         return 1;
                     }))
                 .then(literal("Int")
@@ -191,6 +191,45 @@ public class ClientCommands implements ClientModInitializer {
                             }
                             return 1;
                         })))
+        );
+        dispatcher.register(
+            literal("for")
+                .then(argument("Local Variable Name", StringArgumentType.string())
+                    .then(literal("in_range")
+                        .then(argument("End or Start", IntegerArgumentType.integer())
+                            .then(literal("end")
+                                .then(argument("End Number", IntegerArgumentType.integer())
+                                     .executes(c -> {
+                                        String key = StringArgumentType.getString(c, "Local Variable Name");
+                                        Integer end_index = IntegerArgumentType.getInteger(c, "End Number");
+                                        Integer end = IntegerArgumentType.getInteger(c, "End or Start");
+                                        QuickMenu.funcManage.creatForLoop(key, end_index, 0, end, 1);
+                                        return 1;
+                                    })))
+                           
+                            .then(argument("End", IntegerArgumentType.integer())
+                                .then(literal("end")
+                                    .then(argument("End Number", IntegerArgumentType.integer())
+                                        .executes(c -> {
+                                            String key = StringArgumentType.getString(c, "Local Variable Name");
+                                            Integer end_index = IntegerArgumentType.getInteger(c, "End Number");
+                                            Integer start = IntegerArgumentType.getInteger(c, "End or Start");
+                                            Integer end = IntegerArgumentType.getInteger(c, "End");
+                                            QuickMenu.funcManage.creatForLoop(key, end_index, start, end, 1);
+                                            return 1;
+                                        })))
+                                .then(argument("Step", IntegerArgumentType.integer())
+                                    .then(literal("end")
+                                        .then(argument("End Number", IntegerArgumentType.integer())
+                                            .executes(c -> {
+                                                String key = StringArgumentType.getString(c, "Local Variable Name");
+                                                Integer end_index = IntegerArgumentType.getInteger(c, "End Number");
+                                                Integer start = IntegerArgumentType.getInteger(c, "End or Start");
+                                                Integer end = IntegerArgumentType.getInteger(c, "End");
+                                                Integer step = IntegerArgumentType.getInteger(c, "Step");
+                                                QuickMenu.funcManage.creatForLoop(key, end_index, start, end, step);
+                                                return 1;
+                                            }))))))))
         );
     }
 
