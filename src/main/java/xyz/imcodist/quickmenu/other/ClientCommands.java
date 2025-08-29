@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.Map;
+import java.lang.reflect.Array;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
 
@@ -231,6 +233,169 @@ public class ClientCommands implements ClientModInitializer {
                                                 return 1;
                                             }))))))))
         );
+        dispatcher.register(
+            literal("if")
+                .then(argument("Variable", StringArgumentType.string())
+                    .then(literal("goto")
+                        .then(argument("Index", IntegerArgumentType.integer())
+                            .executes(c -> {
+                                if (isTruthy(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")))) {
+                                    QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                }
+                                return 1;
+                            })
+                                .then(literal("else_goto")
+                                    .then(argument("Else Index", IntegerArgumentType.integer())
+                                        .executes(c -> {
+                                            if (!isTruthy(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")))) {
+                                                QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                            } else {
+                                                QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                            }
+                                            return 1;
+                                        })))))
+                    .then(literal("==")
+                        .then(argument("Value", StringArgumentType.string())
+                            .then(literal("goto")
+                                .then(argument("Index", IntegerArgumentType.integer())
+                                    .executes(c -> {
+                                        if (String.valueOf(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable"))).equals(StringArgumentType.getString(c, "Value"))) {
+                                            QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                        }
+                                        return 1;
+                                    })
+                                        .then(literal("else_goto")
+                                            .then(argument("Else Index", IntegerArgumentType.integer())
+                                                .executes(c -> {
+                                                    if (!String.valueOf(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable"))).equals(StringArgumentType.getString(c, "Value"))) {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                    } else {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                    }
+                                                    return 1;
+                                                })))))))
+                    .then(literal(">=")
+                        .then(argument("Value", IntegerArgumentType.integer())
+                            .then(literal("goto")
+                                .then(argument("Index", IntegerArgumentType.integer())
+                                    .executes(c -> {
+                                        if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) >= IntegerArgumentType.getInteger(c, "Value"))) {
+                                            QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                        }
+                                        return 1;
+                                    })
+                                        .then(literal("else_goto")
+                                            .then(argument("Else Index", IntegerArgumentType.integer())
+                                                .executes(c -> {
+                                                    if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) < IntegerArgumentType.getInteger(c, "Value"))) {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                    } else {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                    }
+                                                    return 1;
+                                                })))))))
+                    .then(literal("<=")
+                        .then(argument("Value", IntegerArgumentType.integer())
+                            .then(literal("goto")
+                                .then(argument("Index", IntegerArgumentType.integer())
+                                    .executes(c -> {
+                                        if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) <= IntegerArgumentType.getInteger(c, "Value"))) {
+                                            QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                        }
+                                        return 1;
+                                    })
+                                        .then(literal("else_goto")
+                                            .then(argument("Else Index", IntegerArgumentType.integer())
+                                                .executes(c -> {
+                                                    if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) > IntegerArgumentType.getInteger(c, "Value"))) {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                    } else {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                    }
+                                                    return 1;
+                                                })))))))
+                    .then(literal(">")
+                        .then(argument("Value", IntegerArgumentType.integer())
+                            .then(literal("goto")
+                                .then(argument("Index", IntegerArgumentType.integer())
+                                    .executes(c -> {
+                                        if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) > IntegerArgumentType.getInteger(c, "Value"))) {
+                                            QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                        }
+                                        return 1;
+                                    })
+                                        .then(literal("else_goto")
+                                            .then(argument("Else Index", IntegerArgumentType.integer())
+                                                .executes(c -> {
+                                                    if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) <= IntegerArgumentType.getInteger(c, "Value"))) {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                    } else {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                    }
+                                                    return 1;
+                                                })))))))
+                    .then(literal("<")
+                        .then(argument("Value", IntegerArgumentType.integer())
+                            .then(literal("goto")
+                                .then(argument("Index", IntegerArgumentType.integer())
+                                    .executes(c -> {
+                                        if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) < IntegerArgumentType.getInteger(c, "Value"))) {
+                                            QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                        }
+                                        return 1;
+                                    })
+                                        .then(literal("else_goto")
+                                            .then(argument("Else Index", IntegerArgumentType.integer())
+                                                .executes(c -> {
+                                                    if (((Integer) QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")) >= IntegerArgumentType.getInteger(c, "Value"))) {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                    } else {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                    }
+                                                    return 1;
+                                                })))))))
+                    .then(literal("!=")
+                        .then(argument("Value", StringArgumentType.string())
+                            .then(literal("goto")
+                                .then(argument("Index", IntegerArgumentType.integer())
+                                    .executes(c -> {
+                                        if (!String.valueOf(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable"))).equals(StringArgumentType.getString(c, "Value"))) {
+                                            QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                        }
+                                        return 1;
+                                    })
+                                        .then(literal("else_goto")
+                                            .then(argument("Else Index", IntegerArgumentType.integer())
+                                                .executes(c -> {
+                                                    if (String.valueOf(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable"))).equals(StringArgumentType.getString(c, "Value"))) {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                    } else {
+                                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                    }
+                                                    return 1;
+                                                })))))))
+                    )
+                .then(literal("not")
+                    .then(argument("Variable", StringArgumentType.string())
+                        .then(literal("goto")
+                            .then(argument("Index", IntegerArgumentType.integer())
+                                .executes(c -> {
+                                    if (!isTruthy(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")))) {
+                                        QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                    }
+                                    return 1;
+                                })
+                                    .then(literal("else_goto")
+                                        .then(argument("Else Index", IntegerArgumentType.integer())
+                                            .executes(c -> {
+                                                if (isTruthy(QuickMenu.funcManage.getVariable(StringArgumentType.getString(c, "Variable")))) {
+                                                    QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Else Index"));
+                                                } else {
+                                                    QuickMenu.funcManage.gotoIndex(IntegerArgumentType.getInteger(c, "Index"));
+                                                }
+                                                return 1;
+                                            })))))))
+        );
     }
 
     private void clearChat() {
@@ -238,6 +403,26 @@ public class ClientCommands implements ClientModInitializer {
         if (client.inGameHud != null && client.inGameHud.getChatHud() != null) {
             ChatHud chatHud = client.inGameHud.getChatHud();
             chatHud.clear(true);
+        }
+    }
+
+    public static boolean isTruthy(Object obj) {
+        if (obj == null) {
+            return false;
+        } else if (obj instanceof String) {
+            return !((String) obj).isEmpty();
+        } else if (obj instanceof Number) {
+            return ((Number) obj).doubleValue() != 0.0;
+        } else if (obj instanceof Collection) {
+            return !((Collection<?>) obj).isEmpty();
+        } else if (obj instanceof Map) {
+            return !((Map<?, ?>) obj).isEmpty();
+        } else if (obj.getClass().isArray()) {
+            return Array.getLength(obj) != 0;
+        } else if (obj instanceof Boolean) {
+            return (Boolean) obj;
+        } else {
+            return true;
         }
     }
     

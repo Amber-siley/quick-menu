@@ -15,6 +15,7 @@ public class JumpFuncManage {
     public Map<String, Object> variableMap = new HashMap<>();
     public record forLoop(Integer startIndex, Integer endIndex, Integer start, Integer end, Integer step) {}
     public Map<String, forLoop> forLoopMap = new HashMap<>(); // 变量名对应具体循环值
+    public ArrayList<String> forLoopKeys;
     public Integer currentIndex = 1;
 
     public JumpFuncManage() {
@@ -89,6 +90,7 @@ public class JumpFuncManage {
             }
             this.currentIndex = index;
             this.forLoopMap.clear();
+            this.forLoopKeys.clear();
         }
     }
     
@@ -129,18 +131,10 @@ public class JumpFuncManage {
                         }
                     }
                 }
-                ArrayList<String> forLoopKeys = this.getForLoopKeys();
-                a.run();
-                this.listAction.remove(a);
+                this.forLoopKeys = this.getForLoopKeys();
                 if (forLoopKeys.size() > 0) {
                     String key = forLoopKeys.get(forLoopKeys.size()-1);
                     forLoop loop = this.forLoopMap.get(key);
-                    if (this.currentIndex == loop.endIndex & (Integer) this.getVariable(key) < loop.end-1) {
-                        // 处在循环中
-                        this.forLoopGotoIndex(loop.startIndex);
-                        this.setVariable(key, (Integer) this.getVariable(key) + loop.step);
-                        continue;
-                    }
                     if ((Integer) this.getVariable(key) >= loop.end-1) {
                         this.forLoopMap.remove(key);
                         if (this.forLoopMap.size() > 0) {
@@ -151,6 +145,19 @@ public class JumpFuncManage {
                             this.setVariable(key, (Integer) this.getVariable(key) + loop.step);
                             continue;
                         }
+                    }
+                }
+                a.run();
+                this.listAction.remove(a);
+                this.forLoopKeys = this.getForLoopKeys();
+                if (forLoopKeys.size() > 0) {
+                    String key = forLoopKeys.get(forLoopKeys.size()-1);
+                    forLoop loop = this.forLoopMap.get(key);
+                    if (this.currentIndex == loop.endIndex & (Integer) this.getVariable(key) < loop.end-1) {
+                        // 处在循环中
+                        this.forLoopGotoIndex(loop.startIndex);
+                        this.setVariable(key, (Integer) this.getVariable(key) + loop.step);
+                        continue;
                     }
                 }
                 this.currentIndex += 1;
